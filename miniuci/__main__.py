@@ -5,50 +5,38 @@ import chess
 import pygame
 
 import graphics
-from engine import Engine
+from engine import Engine, Search, SearchKind
 from settings import WINDOW_SIZE
 
 
-class Config:
-    def __init__(
-        self, engine_path: str, search_time_millis: int, starting_fen: str
-    ) -> None:
-        self.engine_path = engine_path
-        self.search_time_millis = search_time_millis
-        self.starting_fen = starting_fen
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
 
-    @classmethod
-    def from_namespace(cls, namespace: argparse.Namespace) -> Self:
-        return cls(namespace.engine, namespace.time, namespace.fen)
+    go_settings = parser.add_mutually_exclusive_group()
+    go_settings.add_argument("--depth", type=int)
+    go_settings.add_argument("--time", type=int)
 
-    @classmethod
-    def parse(cls) -> Self:
-        parser = argparse.ArgumentParser()
-        parser.add_argument("--engine", default="/usr/games/stockfish")
-        parser.add_argument("--fen", default=chess.STARTING_FEN)
-        parser.add_argument("--time", default=4000)
+    parser.add_argument("--engine", default="stockfish")
+    parser.add_argument("--fen", default=chess.STARTING_FEN)
 
-        return cls.from_namespace(parser.parse_args())
-
-
-def can_promote(move: chess.Move, board: chess.Board) -> bool:
-    piece = board.piece_at(move.from_square)
-    if piece is None or piece.piece_type != chess.PAWN:
-        return False
-
-    if piece.color == chess.BLACK:
-        return chess.square_rank(move.to_square) == 0
-    else:
-        return chess.square_rank(move.to_square) == 7
+    return parser.parse_args()
 
 
 def main() -> None:
     pygame.init()
 
-    config = Config.parse()
+    config = parse_args()
+    if config.depth:
+        search = Search(SearchKind.DEPTH, config.depth)
+    elif config.time:
+        search = Search(SearchKind.TIME, config.time)
+    else:
+        print("need depth or time")
+        return
+
     board = graphics.Board(
-        board=chess.Board(config.starting_fen),
-        engine=Engine(config.engine_path, config.search_time_millis),
+        board=chess.Board(config.fen),
+        engine=Engine(config.engine, search),
         surface=pygame.display.set_mode((WINDOW_SIZE, WINDOW_SIZE)),
     )
 
