@@ -14,6 +14,8 @@ python interpreter on the `miniuci` directory. Moving pieces works like you'd
 expect. Press space to highlight the best move, it may take some time while the
 engine thinks. Below is a summary of the keybinds:
 
+- `f`: Flip the board orientation
+- `r`: Reset the board to the starting position
 - `space`: Highlight the best move
 - `left arrow`: Undo the last move
 
