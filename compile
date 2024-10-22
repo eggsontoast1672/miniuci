@@ -4,4 +4,4 @@ if [ -z "${VIRTUAL_ENV}" ]; then
   . venv/bin/activate
 fi
 
-python3 miniuci ${@}
+python3 -m miniuci ${@}

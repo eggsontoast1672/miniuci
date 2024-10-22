@@ -22,6 +22,7 @@ engine thinks. Below is a summary of the keybinds:
 ## Agenda
 
 * Organize code
+* Print material count
 * Async child process
 * Promotion mechanic
 * Eval bar
@@ -30,3 +31,8 @@ engine thinks. Below is a summary of the keybinds:
 * Best move arrows
 * Sound effects
 * Image anti-aliasing
+
+## Known Bugs
+
+* Best move still highlighted after reset
+* Fen arg doesn't work

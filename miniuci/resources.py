@@ -1,10 +1,10 @@
 import chess
 import pygame
 
-from settings import CELL_SIZE
+from miniuci.settings import CELL_SIZE
 
 
-class AssetManager:
+class ResourceManager:
     def __init__(self) -> None:
         self.cache: dict[str, pygame.Surface] = {}
 

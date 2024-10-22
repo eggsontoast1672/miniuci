@@ -1,13 +1,16 @@
+import chess
 import enum
 import subprocess
 from subprocess import PIPE
-from typing import Literal
+
+
+class EvaluationKind(enum.Enum):
+    CENTIPAWN = enum.auto()
+    MATE = enum.auto()
 
 
 class Evaluation:
-    Kind = Literal["cp", "mate"]
-
-    def __init__(self, kind: Kind, value: float | int) -> None:
+    def __init__(self, kind: EvaluationKind, value: float | int) -> None:
         self.kind = kind
         self.value = value
 
@@ -36,13 +39,13 @@ class Engine:
         self.engine = subprocess.Popen(path, stdin=PIPE, stdout=PIPE, text=True)
         self.search = search
 
-    def load_position(self, fen: str) -> None:
+    def load_board(self, board: chess.Board) -> None:
         assert self.engine.stdin is not None
 
-        self.engine.stdin.write(f"position fen {fen}\n")
+        self.engine.stdin.write(f"position fen {board.fen()}\n")
         self.engine.stdin.flush()
 
-    def get_best_move(self) -> str:
+    def get_best_move(self) -> chess.Move:
         assert self.engine.stdin is not None
         assert self.engine.stdout is not None
 
@@ -58,4 +61,4 @@ class Engine:
             line = self.engine.stdout.readline()
             print(line, end="")
             if line.startswith("bestmove"):
-                return line.split()[1]
+                return chess.Move.from_uci(line.split()[1])
