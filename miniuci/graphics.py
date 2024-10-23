@@ -1,9 +1,9 @@
 import chess
+import chess.engine
 import math
 import pygame
 from typing import Optional
 
-from miniuci.engine import Evaluation, EvaluationKind
 from miniuci.resources import ResourceManager
 from miniuci.settings import (
     CELL_SIZE,
@@ -17,19 +17,16 @@ from miniuci.settings import (
 class Board:
     def __init__(self) -> None:
         self.best_move: Optional[chess.Move] = None
-        self.eval_bar_height = 320  # TODO: Dynamic eval bar
         self.from_square: Optional[chess.Square] = None
         self.orientation = chess.WHITE
         self.resource_manager = ResourceManager()
+        self.score = chess.engine.PovScore(chess.engine.Cp(0), turn=chess.WHITE)
 
     def clear_best_move(self) -> None:
         self.best_move = None
 
     def clear_from_square(self) -> None:
         self.from_square = None
-
-    def display_best_move(self, move: chess.Move) -> None:
-        self.best_move = move
 
     def draw(self, board: chess.Board, surface: pygame.Surface) -> None:
         self.draw_background(surface)
@@ -47,17 +44,27 @@ class Board:
             pygame.draw.rect(surface, color, rect)
 
     def draw_eval_bar(self, surface: pygame.Surface) -> None:
+        score = self.score.pov(not self.orientation).score()
+        normalized = (
+            10
+            if score is None
+            else pygame.math.clamp(score * 0.01, -10, 10) * EVAL_BAR_HEIGHT * 0.5
+        )
+
+        # -inf <> inf
         if self.orientation == chess.BLACK:
             pygame.draw.rect(surface, "black", (0, 0, EVAL_BAR_WIDTH, EVAL_BAR_HEIGHT))
             pygame.draw.rect(
-                surface, "white", (0, 0, EVAL_BAR_WIDTH, self.eval_bar_height)
+                surface,
+                "white",
+                (0, 0, EVAL_BAR_WIDTH, EVAL_BAR_HEIGHT * 0.5 + normalized),
             )
         else:
             pygame.draw.rect(surface, "white", (0, 0, EVAL_BAR_WIDTH, EVAL_BAR_HEIGHT))
             pygame.draw.rect(
                 surface,
                 "black",
-                (0, 0, EVAL_BAR_WIDTH, EVAL_BAR_HEIGHT - self.eval_bar_height),
+                (0, 0, EVAL_BAR_WIDTH, EVAL_BAR_HEIGHT * 0.5 + normalized),
             )
 
     def draw_pieces(self, board: chess.Board, surface: pygame.Surface) -> None:
@@ -95,7 +102,7 @@ class Board:
     def get_square_under_mouse(self) -> chess.Square:
         mouse_pos = pygame.mouse.get_pos()
         file = math.floor((mouse_pos[0] - EVAL_BAR_WIDTH) / CELL_SIZE)
-        rank = math.floor((mouse_pos[1] - EVAL_BAR_WIDTH) / CELL_SIZE)
+        rank = math.floor(mouse_pos[1] / CELL_SIZE)
         if self.orientation == chess.BLACK:
             return chess.square(7 - file, rank)
         else:
@@ -128,15 +135,11 @@ class Board:
     def is_holding_piece(self) -> bool:
         return self.from_square is not None
 
-    def set_eval_bar_height(self, eval_score: Evaluation) -> None:
-        match eval_score.kind:
-            case EvaluationKind.CENTIPAWN:
-                pass
-            case EvaluationKind.MATE:
-                if self.orientation == chess.BLACK:
-                    pass
-                else:
-                    pass
+    def set_best_move(self, move: chess.Move) -> None:
+        self.best_move = move
+
+    def set_score(self, score: chess.engine.PovScore) -> None:
+        self.score = score
 
     def set_from_square(self, square: chess.Square) -> None:
         self.from_square = square

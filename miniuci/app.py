@@ -1,9 +1,10 @@
 import argparse
 import chess
+import chess.engine
+import pprint
 import pygame
 
 from miniuci import graphics
-from miniuci.engine import Engine, Search, SearchKind
 from miniuci.settings import WINDOW_WIDTH, WINDOW_HEIGHT
 
 
@@ -23,17 +24,18 @@ def parse_args() -> argparse.Namespace:
 class App:
     def __init__(self, config: argparse.Namespace) -> None:
         if config.depth:
-            search = Search(SearchKind.DEPTH, config.depth)
+            limit = chess.engine.Limit(depth=config.depth)
         else:
-            search = Search(SearchKind.TIME, config.time)
+            limit = chess.engine.Limit(time=config.time / 1000)
 
         # Is there a better place for this call? Probably.
         pygame.init()
 
         self.board = chess.Board(config.fen)
         self.clock = pygame.time.Clock()
-        self.engine = Engine(config.engine, search)
+        self.engine = chess.engine.SimpleEngine.popen_uci(config.engine)
         self.graphics = graphics.Board()
+        self.limit = limit
         self.running = True
         self.surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 
@@ -96,12 +98,33 @@ class App:
             self.graphics.draw(self.board, self.surface)
             pygame.display.flip()
             self.clock.tick(60)
+        self.engine.quit()
         pygame.quit()
 
     def display_best_move(self) -> None:
-        self.engine.load_board(self.board)
-        move = self.engine.get_best_move()
-        self.graphics.display_best_move(move)
+        line = None
+        with self.engine.analysis(self.board) as analysis:
+            for info in analysis:
+                pprint.pprint(info)
+
+                score = info.get("score")
+                if score is not None:
+                    self.graphics.set_score(score)
+
+                if self.limit.time is not None:
+                    if info.get("time", 0) >= self.limit.time:
+                        line = info.get("pv")
+                        break
+                elif self.limit.depth is not None:
+                    if info.get("seldepth", 0) >= self.limit.depth:
+                        line = info.get("pv")
+                        break
+                else:
+                    # We can only limit the engine by time or depth at this
+                    # point.
+                    assert False, "unreachable"
+        assert line is not None
+        self.graphics.set_best_move(line[0])
 
     def undo_last_move(self) -> None:
         try:
