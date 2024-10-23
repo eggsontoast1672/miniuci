@@ -37,3 +37,4 @@ engine thinks. Below is a summary of the keybinds:
 * Best move still highlighted after reset
 * Fen arg doesn't work
 * If engine's internal depth limit is reached before the time limit, engine hangs
+* Eval bar height is too low when the score is mate
