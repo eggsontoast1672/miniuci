@@ -1,0 +1,7 @@
+{
+  "engine": "stockfish",
+  "limit": {
+    "kind": "time",
+    "value": 4
+  }
+}
