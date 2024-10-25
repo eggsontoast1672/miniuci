@@ -3,7 +3,7 @@ import asyncio
 import chess
 import chess.engine
 import pygame
-from chess.engine import UciProtocol, INFO_SCORE
+from chess.engine import UciProtocol
 
 from miniuci import graphics
 from miniuci.config import Config
@@ -87,20 +87,18 @@ class App:
         pygame.quit()
 
     async def display_best_move(self) -> None:
-        print("thinking...")
-        result = await self.engine.play(self.board, self.limit, info=INFO_SCORE)
-        score = result.info.get("score")
-        if score is not None:
-            self.graphics.set_score(score)
-            print(f"[DEBUG] {score=}")
+        with await self.engine.analysis(self.board, limit=self.limit) as analysis:
+            async for info in analysis:
+                # Eval bar
+                score = info.get("score")
+                if score is not None:
+                    self.graphics.set_score(score)
 
-        # result.move.__bool__ will be false if either the move is None (how
-        # stockfish signals a checkmate position), or the move is a null move (
-        # how some other engines signal it)
-        if not result.move:
-            print("checkmate")
-            return
-        self.graphics.set_best_move(result.move)
+                # Best move
+                pv = info.get("pv")
+                if pv is not None:
+                    self.graphics.set_best_move(pv[0])
+        print("done!")
 
     def undo_last_move(self) -> None:
         try:
