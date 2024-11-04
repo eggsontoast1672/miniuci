@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "miniuci"
+version = "0.0.1"
+authors = [{ name = "Paul Zupan", email = "paul.zupan.13@gmail.com" }]
+description = "UCI chess GUI written in Python"
+readme = "README.md"
+requires-python=">=3.12"
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Operating System :: OS Independent",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Topic :: Games/Entertainment :: Board Games",
+  "Topic :: Games/Entertainment :: Turn Based Strategy",
+  "Typing :: Typed",
+]
+
+[project.urls]
+Homepage = "https://github.com/eggsontoast1672/miniuci"
+Issues = "https://github.com/eggsontoast1672/miniuci/issues"

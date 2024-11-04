@@ -5,47 +5,48 @@ import chess.engine
 import pygame
 from chess.engine import UciProtocol
 
-from miniuci import graphics
+from miniuci.clock import AsyncClock
 from miniuci.config import Config
+from miniuci.graphics.interface import Interface
 from miniuci.settings import WINDOW_WIDTH, WINDOW_HEIGHT
 
 
 class App:
     def __init__(self, config: Config, engine: UciProtocol) -> None:
         self.board = chess.Board()
-        self.clock = pygame.time.Clock()
+        self.clock = AsyncClock()
         self.engine = engine
-        self.graphics = graphics.Board()
+        self.interface = Interface()
         self.limit = config.limit
         self.running = True
         self.surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 
     def drop_piece_at(self, square: chess.Square) -> None:
-        from_square = self.graphics.get_from_square()
+        from_square = self.interface.get_from_square()
         assert from_square is not None
         move = chess.Move(from_square, square)
         if self.is_promotion_move(move):
             move.promotion = chess.QUEEN
         if self.board.is_legal(move):
             self.board.push(move)
-            self.graphics.clear_best_move()
-        self.graphics.clear_from_square()
+            self.interface.reset_best_move()
+        self.interface.reset_from_square()
 
     async def handle_event(self, event: pygame.event.Event) -> None:
         match event.type:
             case pygame.KEYDOWN:
                 await self.handle_keydown(event)
             case pygame.MOUSEBUTTONDOWN:
-                square = self.graphics.get_square_under_mouse()
-                if self.graphics.is_holding_piece():
+                square = self.interface.get_square_under_mouse()
+                if self.interface.is_holding_piece():
                     self.drop_piece_at(square)
                 else:
                     self.pick_up_piece_at(square)
             case pygame.MOUSEBUTTONUP:
-                if not self.graphics.is_holding_piece():
+                if not self.interface.is_holding_piece():
                     return
-                square = self.graphics.get_square_under_mouse()
-                if square != self.graphics.get_from_square():
+                square = self.interface.get_square_under_mouse()
+                if square != self.interface.get_from_square():
                     self.drop_piece_at(square)
             case pygame.QUIT:
                 self.running = False
@@ -53,10 +54,10 @@ class App:
     async def handle_keydown(self, event: pygame.event.Event) -> None:
         match event.key:
             case pygame.K_f:
-                self.graphics.flip_orientation()
+                self.interface.flip_orientation()
             case pygame.K_r:
                 self.board.reset()
-                self.graphics.clear_best_move()
+                self.interface.reset()
             case pygame.K_LEFT:
                 self.undo_last_move()
             case pygame.K_SPACE:
@@ -74,31 +75,36 @@ class App:
 
     def pick_up_piece_at(self, square: chess.Square) -> None:
         if self.board.piece_at(square) is not None:
-            self.graphics.set_from_square(square)
+            self.interface.set_from_square(square)
 
     async def run(self):
         while self.running:
             for event in pygame.event.get():
                 await self.handle_event(event)
-            self.graphics.draw(self.board, self.surface)
+            # TODO: Fix me!!!
+            self.interface.draw(self.board)
+            self.surface.blit(self.interface.surface, (0, 0))
             pygame.display.flip()
-            await asyncio.sleep(0.016)
+            await self.clock.tick(60)
         await self.engine.quit()
         pygame.quit()
 
     async def display_best_move(self) -> None:
+        self.interface.activate()
         with await self.engine.analysis(self.board, limit=self.limit) as analysis:
             async for info in analysis:
+                print(info)
+
                 # Eval bar
                 score = info.get("score")
                 if score is not None:
-                    self.graphics.set_score(score)
+                    self.interface.set_score(score)
 
                 # Best move
                 pv = info.get("pv")
                 if pv is not None:
-                    self.graphics.set_best_move(pv[0])
-        print("done!")
+                    self.interface.set_best_move(pv[0])
+        self.interface.deactivate()
 
     def undo_last_move(self) -> None:
         try:

@@ -25,7 +25,7 @@ async def main() -> None:
 
     pygame.init()
 
-    _, engine = await chess.engine.popen_uci(config.engine)
+    transport, engine = await chess.engine.popen_uci(config.engine)
     await app.App(config, engine).run()
 
 

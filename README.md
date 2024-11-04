@@ -30,14 +30,12 @@ search for the specified number of seconds (not milliseconds).
 
 ## Agenda
 
-* Async child process
-    * Continuous eval, info line parsing
-* Organize code
-    * Split up board and eval bar modules
+* Installing
 * Improve UI
+    * Active bar grey when checkmate
+    * Multi-pv
     * Best move arrows
     * Print material count
-    * Engine active indicator
     * Image anti-aliasing
     * Check indicator
     * Better selected piece visuals
@@ -46,4 +44,5 @@ search for the specified number of seconds (not milliseconds).
 
 ## Known Bugs
 
+* Moving a piece does not cancel search
 * Eval bar doesn't reset after full board reset

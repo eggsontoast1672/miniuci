@@ -1,7 +1,8 @@
 {
   "engine": "stockfish",
   "limit": {
-    "kind": "time",
-    "value": 4
-  }
+    "kind": "depth",
+    "value": 18
+  },
+  "verbose": true
 }
