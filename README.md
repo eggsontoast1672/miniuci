@@ -32,6 +32,7 @@ search for the specified number of seconds (not milliseconds).
 
 * Installing
 * Improve UI
+    * Complete refactor
     * Active bar grey when checkmate
     * Multi-pv
     * Best move arrows

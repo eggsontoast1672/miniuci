@@ -26,11 +26,14 @@ class App:
         assert from_square is not None
         move = chess.Move(from_square, square)
         if self.is_promotion_move(move):
+            # TODO Promotion dialogue
             move.promotion = chess.QUEEN
         if self.board.is_legal(move):
             self.board.push(move)
             self.interface.reset_best_move()
-        self.interface.reset_from_square()
+
+        # Reset board things
+        self.interface.reset()
 
     async def handle_event(self, event: pygame.event.Event) -> None:
         match event.type:

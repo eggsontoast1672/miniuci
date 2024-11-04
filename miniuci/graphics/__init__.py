@@ -1,28 +1,51 @@
-from typing import Optional
+from typing import Optional, Protocol
 
 import chess
-import pygame
 from chess import Move, Square
-from pygame import Surface, Vector2
+from pygame import Rect, Surface
 
 from miniuci.resources import ResourceManager
-from miniuci.settings import (
-    BOARD_BEST_SQUARE_COLOR,
-    BOARD_DARK_SQUARE_COLOR,
-    BOARD_FROM_SQUARE_COLOR,
-    BOARD_LIGHT_SQUARE_COLOR,
-    BOARD_SIZE,
-    BOARD_X,
-    CELL_SIZE,
-)
+
+
+class Component(Protocol):
+    def get_rect(self) -> Rect: ...
+    def render(self) -> Surface: ...
+
+
+class ActiveBar:
+    RECT = Rect(0, 0, 20, 20)
+
+    def __init__(self) -> None:
+        self.active = False
+        self.surface = Surface(self.RECT.size)
+
+    def activate(self) -> None:
+        self.active = True
+
+    def deactivate(self) -> None:
+        self.active = False
+
+    def get_rect(self) -> Rect:
+        return self.RECT
+
+    def render(self) -> Surface:
+        ACTIVE_COLOR = "green"
+        INACTIVE_COLOR = "red"
+        if self.active:
+            self.surface.fill(ACTIVE_COLOR)
+        else:
+            self.surface.fill(INACTIVE_COLOR)
+        return self.surface
 
 
 class Board:
+    RECT = Rect(40, 0, 640, 640)
+
     def __init__(self) -> None:
         self.best_move: Optional[Move] = None
         self.from_square: Optional[Square] = None
         self.manager = ResourceManager()
-        self.surface = Surface((BOARD_SIZE, BOARD_SIZE))
+        self.surface = Surface(self.RECT.size)
 
     def draw(self, board: chess.Board, orientation: chess.Color) -> None:
         self.draw_background(orientation)

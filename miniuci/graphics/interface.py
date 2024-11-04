@@ -1,5 +1,5 @@
 import math
-from typing import Optional
+from typing import Optional, Protocol, Self
 
 import chess
 import pygame
@@ -7,6 +7,7 @@ from chess import Move, Square
 from chess.engine import PovScore
 from pygame import Surface
 
+from miniuci.graphics.component import Component
 from miniuci.graphics.activebar import ActiveBar
 from miniuci.graphics.evalbar import EvalBar
 from miniuci.graphics.board import Board
@@ -26,20 +27,26 @@ from miniuci.settings import (
 
 
 class Interface:
-    def __init__(self) -> None:
-        self.activebar = ActiveBar()
-        self.evalbar = EvalBar()
-        self.board = Board()
+    def __init__(self, components: dict[str, Component]) -> None:
+        self.components = components
         self.orientation = chess.WHITE
         self.surface = Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
 
     def activate(self) -> None:
-        self.activebar.activate()
+        activebar = self.components["activebar"]
+        assert isinstance(activebar, ActiveBar)
+        activebar.activate()
 
     def deactivate(self) -> None:
-        self.activebar.deactivate()
+        activebar = self.components["activebar"]
+        assert isinstance(activebar, ActiveBar)
+        activebar.deactivate()
 
     def draw(self, board: chess.Board) -> None:
+        for component in self.components.values():
+            surface = component.render(board, self.orientation)
+            position = component.get_position()
+            self.surface.blit(surface, position)
         self.activebar.draw()
         self.evalbar.draw(self.orientation)
         self.board.draw(board, self.orientation)
@@ -67,7 +74,7 @@ class Interface:
         return self.board.is_holding_piece()
 
     def reset(self) -> None:
-        pass
+        self.reset_best_move()
 
     def reset_best_move(self) -> None:
         self.board.reset_best_move()
@@ -83,3 +90,15 @@ class Interface:
 
     def set_score(self, score: PovScore) -> None:
         self.evalbar.set_score(score)
+
+
+class UIBuilder:
+    def __init__(self) -> None:
+        self.components = {}
+
+    def build(self) -> Interface:
+        return Interface(self.components)
+
+    def with_component(self, name: str, component: Component) -> Self:
+        self.components[name] = component
+        return self
