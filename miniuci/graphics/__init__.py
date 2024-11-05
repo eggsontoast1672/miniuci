@@ -7,37 +7,6 @@ from pygame import Rect, Surface
 from miniuci.resources import ResourceManager
 
 
-class Component(Protocol):
-    def get_rect(self) -> Rect: ...
-    def render(self) -> Surface: ...
-
-
-class ActiveBar:
-    RECT = Rect(0, 0, 20, 20)
-
-    def __init__(self) -> None:
-        self.active = False
-        self.surface = Surface(self.RECT.size)
-
-    def activate(self) -> None:
-        self.active = True
-
-    def deactivate(self) -> None:
-        self.active = False
-
-    def get_rect(self) -> Rect:
-        return self.RECT
-
-    def render(self) -> Surface:
-        ACTIVE_COLOR = "green"
-        INACTIVE_COLOR = "red"
-        if self.active:
-            self.surface.fill(ACTIVE_COLOR)
-        else:
-            self.surface.fill(INACTIVE_COLOR)
-        return self.surface
-
-
 class Board:
     RECT = Rect(40, 0, 640, 640)
 

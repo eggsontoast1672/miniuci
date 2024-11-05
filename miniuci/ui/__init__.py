@@ -20,12 +20,23 @@ class Root:
         self.components = components
 
     def get_size(self) -> tuple[int, int]:
-        total_width, total_height = 0, 0
+        total_width, max_height = 0, 0
         for component in self.components:
             width, height = component.get_size()
             total_width += width
-            total_height += height
-        return total_width, total_height
+            max_height = max(max_height, height)
+        return total_width, max_height
+
+    def render(self, state: Any) -> Surface:
+        # TODO: Store surface so we don't have to recalculate the size every
+        # single damn time
+        surface = Surface(self.get_size())
+        position = 0
+        for component in self.components:
+            rendered = component.render(state)
+            surface.blit(rendered, (position, 0))
+            position += component.get_size()[0]
+        return surface
 
 
 class Builder:
@@ -37,4 +48,4 @@ class Builder:
         return self
 
     def build(self) -> Root:
-        assert False, "todo"
+        return Root(self.components)

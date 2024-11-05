@@ -2,7 +2,7 @@
   "engine": "stockfish",
   "limit": {
     "kind": "depth",
-    "value": 18
+    "value": 22
   },
   "verbose": true
 }
