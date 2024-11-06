@@ -2,7 +2,13 @@ import abc
 from abc import ABC
 from typing import Any, Self
 
-from pygame import Surface
+from pygame import Surface, Vector2
+
+
+class State:
+    def __init__(self, mouse: Vector2) -> None:
+        self.app: Any = None
+        self.mouse = mouse
 
 
 class Component(ABC):
@@ -11,7 +17,7 @@ class Component(ABC):
         pass
 
     @abc.abstractmethod
-    def render(self, state: Any) -> Surface:
+    def render(self, state: State) -> Surface:
         pass
 
 

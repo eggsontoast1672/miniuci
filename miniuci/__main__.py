@@ -14,7 +14,7 @@ def build_ui() -> ui.Root:
         ui.Builder()
         .with_component(blank.Component((100, 200), pygame.Color(0xFF, 0x00, 0x00)))
         .with_component(blank.Component((100, 100), pygame.Color(0x00, 0xFF, 0x00)))
-        .with_component(blank.Component((100, 100), pygame.Color(0x00, 0x00, 0xFF)))
+        .with_component(blank.Component((100, 100), pygame.Color(0x00, 0xFF, 0xFF)))
         .build()
     )
 

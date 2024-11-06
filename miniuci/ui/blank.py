@@ -14,7 +14,7 @@ class Component(ui.Component):
     def get_size(self) -> tuple[int, int]:
         return self.size
 
-    def render(self, state: Any) -> Surface:
+    def render(self, state: ui.State) -> Surface:
         surface = Surface(self.size)
         surface.fill(self.color)
         return surface
