@@ -1,4 +1,5 @@
-from typing import Any, Optional
+import math
+from typing import Optional
 
 import chess
 import pygame
@@ -18,6 +19,7 @@ BEST_SQUARE_COLOR = pygame.Color(0xFF, 0xFF, 0x00)
 
 class Component(ui.Component):
     def __init__(self) -> None:
+        super().__init__()
         self.from_square: Optional[Square] = None
         self.manager = ResourceManager()
         self.surface = Surface((CELL_SIZE * 8, CELL_SIZE * 8))
@@ -26,7 +28,7 @@ class Component(ui.Component):
         return self.surface.get_size()
 
     def get_square_color(self, square: Square, state: ui.State) -> pygame.Color:
-        pos = self.get_square_pos(square, state.app.orientation)
+        pos = self.get_square_pos(square, state)
         if self.is_square_best_move(square, state):
             return BEST_SQUARE_COLOR
         elif square == self.from_square:
@@ -44,6 +46,16 @@ class Component(ui.Component):
         else:
             return Vector2(7 - file, rank)
 
+    def get_square_under_mouse(self, white: bool) -> Square:
+        file = math.floor(self.mouse_pos[0] / CELL_SIZE)
+        rank = math.floor(self.mouse_pos[1] / CELL_SIZE)
+
+        # TODO: This won't work
+        if white:
+            return chess.square(file, rank)
+        else:
+            return chess.square(file, rank)
+
     @staticmethod
     def is_square_best_move(square: Square, state: ui.State) -> bool:
         if state.app.best_move is None:
@@ -51,6 +63,9 @@ class Component(ui.Component):
         is_from_square = square == state.app.best_move.from_square
         is_to_square = square == state.app.best_move.to_square
         return is_from_square or is_to_square
+
+    def on_mouse_button_down(self, state: ui.State) -> None:
+        square = self.get_square_under_mouse()
 
     def render(self, state: ui.State) -> Surface:
         self.render_background(state)
@@ -87,5 +102,5 @@ class Component(ui.Component):
         if held_piece is not None:
             self.surface.blit(
                 held_piece,
-                (state.mouse.x - CELL_SIZE / 2, state.mouse.y - CELL_SIZE / 2),
+                (self.mouse_pos[0] - CELL_SIZE / 2, self.mouse_pos[1] - CELL_SIZE / 2),
             )

@@ -4,14 +4,19 @@ from typing import Any, Self
 
 from pygame import Surface, Vector2
 
+from miniuci import app
+
 
 class State:
-    def __init__(self, mouse: Vector2) -> None:
-        self.app: Any = None
+    def __init__(self, app_state: app.State, mouse: Vector2) -> None:
+        self.app = app_state
         self.mouse = mouse
 
 
 class Component(ABC):
+    def __init__(self) -> None:
+        self.mouse_pos = (0, 0)
+
     @abc.abstractmethod
     def get_size(self) -> tuple[int, int]:
         pass

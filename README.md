@@ -47,3 +47,28 @@ search for the specified number of seconds (not milliseconds).
 
 * Moving a piece does not cancel search
 * Eval bar doesn't reset after full board reset
+
+## Solutions
+
+### Solution 1
+
+We add position information to each component.
+
+* Pros
+    * Getting relative mouse position is super simple
+    * We have more control over how components are organized
+    * Quick to write
+* Cons
+    * UI system is much less declarative
+    * We must update window size manually if component size/position changes
+
+### Solution 2
+
+We inject the relative mouse position information into the each component with
+the `ui.Component` interface.
+
+* Pros
+    * Keep the UI declarative
+    * Easy API
+* Cons
+    * None really

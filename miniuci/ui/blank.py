@@ -1,5 +1,3 @@
-from typing import Any
-
 import pygame
 from pygame import Surface
 

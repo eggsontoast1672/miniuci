@@ -1,36 +1,45 @@
 import asyncio
+from typing import Optional
 
 import chess
 import chess.engine
 import pygame
-from chess.engine import UciProtocol
+from chess import Board, Move, Square
+from chess.engine import Cp, PovScore, UciProtocol
 
 from miniuci.clock import AsyncClock
 from miniuci.config import Config
-from miniuci.graphics.interface import Interface
 from miniuci.settings import WINDOW_WIDTH, WINDOW_HEIGHT
+
+
+class State:
+    def __init__(self) -> None:
+        self.best_move: Optional[Move] = None
+        self.board = Board()
+        self.engine_thinking = False
+        self.from_square: Optional[Square] = None
+        self.score = PovScore(Cp(0), chess.WHITE)
+        self.white = True
 
 
 class App:
     def __init__(self, config: Config, engine: UciProtocol) -> None:
-        self.board = chess.Board()
         self.clock = AsyncClock()
         self.engine = engine
-        self.interface = Interface()
         self.limit = config.limit
         self.running = True
         self.surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+        self.state = State()
 
     def drop_piece_at(self, square: chess.Square) -> None:
-        from_square = self.interface.get_from_square()
-        assert from_square is not None
-        move = chess.Move(from_square, square)
+        assert self.state.from_square is not None
+        move = chess.Move(self.state.from_square, square)
         if self.is_promotion_move(move):
             # TODO Promotion dialogue
             move.promotion = chess.QUEEN
-        if self.board.is_legal(move):
-            self.board.push(move)
-            self.interface.reset_best_move()
+        if self.state.board.is_legal(move):
+            self.state.board.push(move)
+            self.state.best_move = None
 
         # Reset board things
         self.interface.reset()
