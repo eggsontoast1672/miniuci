@@ -4,4 +4,4 @@ if [ -z "${VIRTUAL_ENV}" ]; then
   . venv/bin/activate
 fi
 
-python3 -m miniuci ${@}
+python3 -m second_refactor ${@}
